@@ -1,47 +1,101 @@
 "use strict";
 
-let task = "";
+const prompt = require("prompt-sync")();
+
+let tasks = [];
+const completedTasks = [];
+
 let completedTaskCount = 0;
 
+const Task = (title, description) => ({
+  title,
+  description,
+  isCompleted: false,
+  createdDate: new Date(),
+  completedDate: null,
+});
+
 function showTask() {
-  console.log(task === "" ? "Задача отсутствует" : task);
+  if (tasks.length === 0) {
+    return console.log("В данный момент нет активных задач");
+  }
+
+  for (const task of tasks) {
+    for (let key in task) {
+      console.log(`${key}: `, task[key]);
+    }
+  }
 }
 
-const setTask = taskDescription => {
-  if (typeof taskDescription !== "string") {
-    return console.log("Описание задачи должно быть строкой");
+const setTask = (title, description) => {
+  if (typeof title !== "string" || typeof description !== "string") {
+    return console.log("Описание и название задачи должно быть строкой");
   }
 
-  if (task) {
-    return console.log(
-      "Не могу добавить задачу, завершите или удалите предыдущую",
-    );
+  if (title === "" || description === "") {
+    return console.log("Название или описание задачи не должно быть пустым");
   }
 
-  task = taskDescription;
+  tasks.push(Task(title, description));
 };
 
-const deleteTask = () => {
-  task ? (task = "") : console.log("Задача отсутсвует");
-};
-
-const completeTask = () => {
-  if (task) {
-    completedTaskCount++;
+const deleteTask = index => {
+  if (tasks.length === 0) {
+    return;
   }
 
-  deleteTask();
+  if (tasks[index].isCompleted) {
+    tasks.splice(index, 1);
+    return;
+  }
+
+  console.log("Таска еще не выполнена, удалить?");
+
+  const choice = prompt(`
+    Да - удалить
+    Нет - пропустить
+  `);
+
+  if (choice === "Да") {
+    tasks.splice(index, 1);
+  }
+};
+
+const clearTasks = () => (tasks = []);
+
+const completeTask = index => {
+  if (typeof index !== "number") {
+    return;
+  }
+
+  if (index < 0 || index >= tasks.length) {
+    return;
+  }
+
+  tasks[index].isCompleted = true;
+  tasks[index].completedDate = new Date();
+
+  completedTasks.push(tasks[index]);
+
+  completedTaskCount++;
 };
 
 const appStart = () => {
   showTask();
 
-  setTask("task 1");
-  setTask("task 2");
+  setTask("title", "description");
+
+  setTask("title2", "description2");
 
   showTask();
 
-  completeTask();
+  completeTask(0);
+
+  deleteTask(1);
+
+  showTask();
+
+  deleteTask(0);
 
   showTask();
 };
