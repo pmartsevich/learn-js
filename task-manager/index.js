@@ -2,7 +2,7 @@
 
 const prompt = require("prompt-sync")();
 
-const tasks = [];
+let tasks = [];
 const completedTasks = [];
 
 const POSITIVE_ANSWER = "да";
@@ -21,12 +21,47 @@ function showTask() {
     return console.log("В данный момент нет активных задач");
   }
 
-  for (const task of tasks) {
-    for (let key in task) {
-      console.log(`${key}: `, task[key]);
-    }
-  }
+  tasks.forEach((task, index) => {
+    console.log(`Current element: ${index}`);
+
+    Object.entries(task).forEach(([key, value]) =>
+      console.log(`${key}: `, value),
+    );
+  });
 }
+
+const getTaskDescriptions = () => tasks.map(task => task.description);
+
+const getLongTasks = () =>
+  tasks.filter(
+    ({ title, description }) => title.length > 10 || description.length > 10,
+  );
+
+const getTasksByDateRange = (startDate, endDate, isCompleted = false) => {
+  const withinRange = tasks.filter(
+    task => task.createdDate > startDate && task.completedDate < endDate,
+  );
+
+  return isCompleted
+    ? withinRange.filter(task => task.isCompleted)
+    : withinRange;
+};
+
+const clearShortTasks = () => {
+  tasks = tasks.filter(
+    ({ title, description }) => title.length >= 5 || description.length >= 5,
+  );
+};
+
+const updateTitle = (index, newTitle) => {
+  const task = tasks[index];
+
+  if (!task) {
+    return;
+  }
+
+  task.title = newTitle;
+};
 
 const setTask = (title, description) => {
   if (typeof title !== "string" || typeof description !== "string") {
@@ -57,7 +92,7 @@ const deleteTask = index => {
     const choice = prompt(`
       ${POSITIVE_ANSWER} - удалить
       ${NEGATIVE_ANSWER} - пропустить
-    `)
+      `)
       .toLowerCase()
       .trim();
 
@@ -94,9 +129,16 @@ const completeTask = index => {
 const appStart = () => {
   showTask();
 
-  setTask("title", "description");
+  setTask("title", "descriptionnnnnnnnnnn");
 
-  setTask("title2", "description2");
+  setTask("tit", "de2");
+
+  updateTitle(0, "NewTitle");
+  updateTitle(5, "NewTitle");
+
+  showTask();
+
+  clearShortTasks();
 
   showTask();
 
