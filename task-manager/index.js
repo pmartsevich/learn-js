@@ -2,12 +2,13 @@
 
 const prompt = require("prompt-sync")();
 
-let tasks = [];
+const tasks = [];
 const completedTasks = [];
 
-let completedTaskCount = 0;
+const POSITIVE_ANSWER = "да";
+const NEGATIVE_ANSWER = "нет";
 
-const Task = (title, description) => ({
+const createTask = (title, description) => ({
   title,
   description,
   isCompleted: false,
@@ -32,11 +33,11 @@ const setTask = (title, description) => {
     return console.log("Описание и название задачи должно быть строкой");
   }
 
-  if (title === "" || description === "") {
+  if (title.trim() === "" || description.trim() === "") {
     return console.log("Название или описание задачи не должно быть пустым");
   }
 
-  tasks.push(Task(title, description));
+  tasks.push(createTask(title, description));
 };
 
 const deleteTask = index => {
@@ -44,40 +45,50 @@ const deleteTask = index => {
     return;
   }
 
-  if (tasks[index].isCompleted) {
-    tasks.splice(index, 1);
+  const task = tasks[index];
+
+  if (!task) {
     return;
   }
 
-  console.log("Таска еще не выполнена, удалить?");
+  if (!task.isCompleted) {
+    console.log("Таска еще не выполнена, удалить?");
 
-  const choice = prompt(`
-    Да - удалить
-    Нет - пропустить
-  `);
+    const choice = prompt(`
+      ${POSITIVE_ANSWER} - удалить
+      ${NEGATIVE_ANSWER} - пропустить
+    `)
+      .toLowerCase()
+      .trim();
 
-  if (choice === "Да") {
-    tasks.splice(index, 1);
+    if (choice === NEGATIVE_ANSWER) {
+      return console.log("Таска не удалена");
+    }
+
+    if (choice !== POSITIVE_ANSWER) {
+      return console.log(
+        `Таска не удалена. Введено ${choice}; Ожидалось: ${POSITIVE_ANSWER}, либо ${NEGATIVE_ANSWER}`,
+      );
+    }
   }
+
+  tasks.splice(index, 1);
+  console.log("Таска успешно удалена!");
 };
 
-const clearTasks = () => (tasks = []);
+const clearTasks = () => (tasks.length = 0);
 
 const completeTask = index => {
-  if (typeof index !== "number") {
+  const task = tasks[index];
+
+  if (!task) {
     return;
   }
 
-  if (index < 0 || index >= tasks.length) {
-    return;
-  }
+  task.isCompleted = true;
+  task.completedDate = new Date();
 
-  tasks[index].isCompleted = true;
-  tasks[index].completedDate = new Date();
-
-  completedTasks.push(tasks[index]);
-
-  completedTaskCount++;
+  completedTasks.push(task);
 };
 
 const appStart = () => {
